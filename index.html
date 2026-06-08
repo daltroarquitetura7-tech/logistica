@@ -529,7 +529,7 @@ async function confirmar() {
   const body = new URLSearchParams();
   body.append(ENTRY_PROC, dadosProcesso.proc);
   body.append(ENTRY_LOC,  novaLoc);
-  if (obsCompleto) body.append("entry.OBS", obsCompleto);
+  if (obsCompleto) body.append("entry.911385228", obsCompleto);
 
   try {
     await fetch(FORMS_URL, {
