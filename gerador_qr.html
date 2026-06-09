@@ -42,7 +42,7 @@
   .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
   .header-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
 
-  .card {
+  .form-card {
     width: 100%;
     max-width: 560px;
     background: var(--dark2);
@@ -51,7 +51,6 @@
     overflow: hidden;
     margin-bottom: 24px;
   }
-
   .card-body { padding: 24px; }
 
   .section-label {
@@ -63,35 +62,20 @@
     margin-bottom: 10px;
   }
 
-  .input-proc {
+  .input-proc, .input-nome {
     width: 100%;
     background: var(--dark3);
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
-    font-family: 'DM Mono', monospace;
     font-size: 14px;
     padding: 12px 16px;
     outline: none;
     margin-bottom: 20px;
   }
-  .input-proc:focus { border-color: var(--accent); }
-  .input-proc::placeholder { color: var(--muted); }
-
-  .input-nome {
-    width: 100%;
-    background: var(--dark3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    padding: 12px 16px;
-    outline: none;
-    margin-bottom: 20px;
-  }
-  .input-nome:focus { border-color: var(--accent); }
-  .input-nome::placeholder { color: var(--muted); }
+  .input-proc { font-family: 'DM Mono', monospace; }
+  .input-proc:focus, .input-nome:focus { border-color: var(--accent); }
+  .input-proc::placeholder, .input-nome::placeholder { color: var(--muted); }
 
   .btn-gerar {
     width: 100%;
@@ -104,16 +88,13 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
   }
-  .btn-gerar:hover { opacity: 0.85; }
 
   .preview-area { display: none; width: 100%; max-width: 560px; }
   .preview-area.show { display: block; }
 
   .btn-imprimir {
     width: 100%;
-    max-width: 560px;
     padding: 14px;
     background: var(--dark2);
     border: 1px solid var(--border);
@@ -124,16 +105,18 @@
     font-weight: 500;
     cursor: pointer;
     margin-top: 12px;
-    transition: border-color 0.2s;
   }
-  .btn-imprimir:hover { border-color: var(--accent); }
 
   .etiqueta-wrap {
     display: flex;
     justify-content: center;
     padding: 24px;
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
   }
 
+  /* A etiqueta em si — branca, para impressão */
   .etiqueta {
     width: 240px;
     border: 2px solid #CCCCCC;
@@ -142,72 +125,44 @@
     background: white;
     font-family: Arial, sans-serif;
   }
-
   .etiqueta-header {
     background: #1A1A2E;
     padding: 10px 12px 8px;
     text-align: center;
   }
-  .etiqueta-proc {
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
-  .etiqueta-empresa {
-    color: #AAAAAA;
-    font-size: 8px;
-    margin-top: 2px;
-  }
+  .etiqueta-proc { color: white; font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+  .etiqueta-empresa { color: #AAAAAA; font-size: 8px; margin-top: 2px; }
+  .etiqueta-qr { display: flex; justify-content: center; padding: 12px 12px 6px; background: white; }
+  .etiqueta-qr img { width: 110px; height: 110px; display: block; }
+  .etiqueta-divider { height: 1px; background: #EEEEEE; margin: 0 12px; }
+  .etiqueta-nome { text-align: center; font-size: 9px; color: #1A1A2E; padding: 6px 8px 10px; background: white; word-break: break-word; }
 
-  .etiqueta-qr {
-    display: flex;
-    justify-content: center;
-    padding: 12px 12px 6px;
-    background: white;
-  }
-  /* A imagem gerada pelo QR */
-  .etiqueta-qr img {
-    width: 110px !important;
-    height: 110px !important;
-    display: block;
-  }
+  #qrHidden { position: absolute; left: -9999px; top: -9999px; }
 
-  .etiqueta-divider {
-    height: 1px;
-    background: #EEEEEE;
-    margin: 0 12px;
-  }
-
-  .etiqueta-nome {
-    text-align: center;
-    font-size: 9px;
-    color: #1A1A2E;
-    padding: 6px 8px 10px;
-    background: white;
-    word-break: break-word;
-  }
-
-  /* Área oculta para gerar o QR antes de converter */
-  #qrHidden {
-    position: absolute;
-    left: -9999px;
-    top: -9999px;
-  }
-
+  /* IMPRESSÃO — mostra só a etiqueta */
   @media print {
-    body { background: white; padding: 0; margin: 0; }
-    .card, .btn-imprimir, .header { display: none !important; }
-    .preview-area { display: block !important; }
-    .etiqueta-wrap { padding: 8px; }
-    .etiqueta {
-      border: 1px solid #CCC;
-      box-shadow: none;
-      page-break-inside: avoid;
+    body { background: white !important; padding: 0; margin: 0; }
+    .header { display: none !important; }
+    .form-card { display: none !important; }
+    .btn-imprimir { display: none !important; }
+    .preview-area { display: block !important; width: 100%; }
+    .etiqueta-wrap {
+      background: white !important;
+      border: none !important;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-    .etiqueta-header { background: #1A1A2E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .etiqueta-qr img { width: 110px !important; height: 110px !important; }
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .etiqueta { border: 1px solid #CCC !important; }
+    .etiqueta-header {
+      background: #1A1A2E !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .etiqueta-proc { color: white !important; }
+    .etiqueta-empresa { color: #AAAAAA !important; }
+    .etiqueta-qr { background: white !important; }
+    .etiqueta-nome { background: white !important; color: #1A1A2E !important; }
   }
 </style>
 </head>
@@ -218,7 +173,7 @@
   <div class="header-title">Daltro Regularizações · Gerador de Etiquetas</div>
 </div>
 
-<div class="card">
+<div class="form-card">
   <div class="card-body">
     <div class="section-label">Código do processo</div>
     <input class="input-proc" id="inputProc" type="text" placeholder="Ex: PROC-126" maxlength="10"
@@ -231,25 +186,21 @@
   </div>
 </div>
 
-<!-- Área oculta para gerar QR e converter para imagem -->
 <div id="qrHidden"></div>
 
-<!-- PREVIEW -->
 <div class="preview-area" id="previewArea">
-  <div class="card">
-    <div class="etiqueta-wrap">
-      <div class="etiqueta">
-        <div class="etiqueta-header">
-          <div class="etiqueta-proc" id="labelProc">PROC-000</div>
-          <div class="etiqueta-empresa">Daltro Regularizações</div>
-        </div>
-        <div class="etiqueta-qr" id="qrImgContainer"></div>
-        <div class="etiqueta-divider"></div>
-        <div class="etiqueta-nome" id="labelNome">—</div>
+  <div class="etiqueta-wrap">
+    <div class="etiqueta">
+      <div class="etiqueta-header">
+        <div class="etiqueta-proc" id="labelProc">PROC-000</div>
+        <div class="etiqueta-empresa">Daltro Regularizações</div>
       </div>
+      <div class="etiqueta-qr" id="qrImgContainer"></div>
+      <div class="etiqueta-divider"></div>
+      <div class="etiqueta-nome" id="labelNome">—</div>
     </div>
   </div>
-  <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir etiqueta</button>
+  <button class="btn-imprimir" onclick="imprimirEtiqueta()">🖨️ Imprimir etiqueta</button>
 </div>
 
 <script>
@@ -258,45 +209,47 @@ const BASE_URL = "https://daltroarquitetura7-tech.github.io/logistica/?proc=";
 function gerarEtiqueta() {
   const proc = document.getElementById("inputProc").value.trim();
   const nome = document.getElementById("inputNome").value.trim();
-
-  if (!proc) {
-    alert("Digite o código do processo.");
-    return;
-  }
+  if (!proc) { alert("Digite o código do processo."); return; }
 
   const url = BASE_URL + encodeURIComponent(proc);
-
-  // Atualiza labels
   document.getElementById("labelProc").textContent = proc;
   document.getElementById("labelNome").textContent = nome || "—";
 
-  // Gera QR no container oculto
   const hidden = document.getElementById("qrHidden");
   hidden.innerHTML = "";
 
   new QRCode(hidden, {
     text: url,
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
     colorDark: "#000000",
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.M
   });
 
-  // Aguarda o canvas ser gerado e converte para <img>
   setTimeout(() => {
     const canvas = hidden.querySelector("canvas");
     if (canvas) {
       const imgSrc = canvas.toDataURL("image/png");
-      const imgContainer = document.getElementById("qrImgContainer");
-      imgContainer.innerHTML = `<img src="${imgSrc}" alt="QR Code">`;
+      document.getElementById("qrImgContainer").innerHTML =
+        `<img src="${imgSrc}" alt="QR Code" style="width:110px;height:110px;">`;
     }
-
-    // Mostra preview
     const preview = document.getElementById("previewArea");
     preview.classList.add("show");
     preview.scrollIntoView({ behavior: "smooth" });
-  }, 300);
+  }, 400);
+}
+
+function imprimirEtiqueta() {
+  // Garante que a imagem está carregada antes de imprimir
+  const img = document.querySelector("#qrImgContainer img");
+  if (img && img.complete) {
+    window.print();
+  } else if (img) {
+    img.onload = () => window.print();
+  } else {
+    window.print();
+  }
 }
 
 document.addEventListener("keydown", (e) => {
