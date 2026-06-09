@@ -63,14 +63,8 @@
     margin-bottom: 10px;
   }
 
-  .input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
   .input-proc {
-    flex: 1;
+    width: 100%;
     background: var(--dark3);
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -79,6 +73,7 @@
     font-size: 14px;
     padding: 12px 16px;
     outline: none;
+    margin-bottom: 20px;
   }
   .input-proc:focus { border-color: var(--accent); }
   .input-proc::placeholder { color: var(--muted); }
@@ -89,7 +84,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
-    font-family: 'DM Sans', monospace;
+    font-family: 'DM Sans', sans-serif;
     font-size: 14px;
     padding: 12px 16px;
     outline: none;
@@ -113,12 +108,7 @@
   }
   .btn-gerar:hover { opacity: 0.85; }
 
-  /* PREVIEW DA ETIQUETA */
-  .preview-area {
-    display: none;
-    width: 100%;
-    max-width: 560px;
-  }
+  .preview-area { display: none; width: 100%; max-width: 560px; }
   .preview-area.show { display: block; }
 
   .btn-imprimir {
@@ -138,7 +128,6 @@
   }
   .btn-imprimir:hover { border-color: var(--accent); }
 
-  /* ETIQUETA PARA IMPRESSÃO */
   .etiqueta-wrap {
     display: flex;
     justify-content: center;
@@ -177,9 +166,11 @@
     padding: 12px 12px 6px;
     background: white;
   }
-  .etiqueta-qr canvas, .etiqueta-qr img {
-    width: 100px !important;
-    height: 100px !important;
+  /* A imagem gerada pelo QR */
+  .etiqueta-qr img {
+    width: 110px !important;
+    height: 110px !important;
+    display: block;
   }
 
   .etiqueta-divider {
@@ -197,13 +188,25 @@
     word-break: break-word;
   }
 
-  /* IMPRESSÃO */
+  /* Área oculta para gerar o QR antes de converter */
+  #qrHidden {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+  }
+
   @media print {
-    body { background: white; padding: 0; }
-    .card, .btn-imprimir, .header, .preview-area > .card { display: none !important; }
+    body { background: white; padding: 0; margin: 0; }
+    .card, .btn-imprimir, .header { display: none !important; }
     .preview-area { display: block !important; }
-    .etiqueta-wrap { padding: 0; }
-    .etiqueta { border: 1px solid #CCC; box-shadow: none; }
+    .etiqueta-wrap { padding: 8px; }
+    .etiqueta {
+      border: 1px solid #CCC;
+      box-shadow: none;
+      page-break-inside: avoid;
+    }
+    .etiqueta-header { background: #1A1A2E !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .etiqueta-qr img { width: 110px !important; height: 110px !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
@@ -218,10 +221,8 @@
 <div class="card">
   <div class="card-body">
     <div class="section-label">Código do processo</div>
-    <div class="input-row">
-      <input class="input-proc" id="inputProc" type="text" placeholder="Ex: PROC-126" maxlength="10"
-        oninput="this.value = this.value.toUpperCase()">
-    </div>
+    <input class="input-proc" id="inputProc" type="text" placeholder="Ex: PROC-126" maxlength="10"
+      oninput="this.value = this.value.toUpperCase()">
 
     <div class="section-label">Nome do cliente</div>
     <input class="input-nome" id="inputNome" type="text" placeholder="Ex: João Silva de Oliveira">
@@ -230,22 +231,24 @@
   </div>
 </div>
 
+<!-- Área oculta para gerar QR e converter para imagem -->
+<div id="qrHidden"></div>
+
 <!-- PREVIEW -->
 <div class="preview-area" id="previewArea">
   <div class="card">
     <div class="etiqueta-wrap">
-      <div class="etiqueta" id="etiqueta">
+      <div class="etiqueta">
         <div class="etiqueta-header">
           <div class="etiqueta-proc" id="labelProc">PROC-000</div>
           <div class="etiqueta-empresa">Daltro Regularizações</div>
         </div>
-        <div class="etiqueta-qr" id="qrContainer"></div>
+        <div class="etiqueta-qr" id="qrImgContainer"></div>
         <div class="etiqueta-divider"></div>
         <div class="etiqueta-nome" id="labelNome">—</div>
       </div>
     </div>
   </div>
-
   <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir etiqueta</button>
 </div>
 
@@ -267,24 +270,35 @@ function gerarEtiqueta() {
   document.getElementById("labelProc").textContent = proc;
   document.getElementById("labelNome").textContent = nome || "—";
 
-  // Gera QR
-  const container = document.getElementById("qrContainer");
-  container.innerHTML = "";
-  new QRCode(container, {
+  // Gera QR no container oculto
+  const hidden = document.getElementById("qrHidden");
+  hidden.innerHTML = "";
+
+  new QRCode(hidden, {
     text: url,
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     colorDark: "#000000",
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.M
   });
 
-  // Mostra preview
-  document.getElementById("previewArea").classList.add("show");
-  document.getElementById("previewArea").scrollIntoView({ behavior: "smooth" });
+  // Aguarda o canvas ser gerado e converte para <img>
+  setTimeout(() => {
+    const canvas = hidden.querySelector("canvas");
+    if (canvas) {
+      const imgSrc = canvas.toDataURL("image/png");
+      const imgContainer = document.getElementById("qrImgContainer");
+      imgContainer.innerHTML = `<img src="${imgSrc}" alt="QR Code">`;
+    }
+
+    // Mostra preview
+    const preview = document.getElementById("previewArea");
+    preview.classList.add("show");
+    preview.scrollIntoView({ behavior: "smooth" });
+  }, 300);
 }
 
-// Enter para gerar
 document.addEventListener("keydown", (e) => {
   if (e.key === "Enter") gerarEtiqueta();
 });
